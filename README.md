@@ -10,4 +10,4 @@ https://openai.com/blog/openai-api
 - 패키지 설치 : pip install -r requirement.txt
 - 비활성화 : deactivate
 
-#5.6 Chat Based Memory
+#6.0 Introduction
