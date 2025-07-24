@@ -1,4 +1,5 @@
 env/
 .env
 files/
+.cache/
 .DS_Store

@@ -10,4 +10,4 @@ https://openai.com/blog/openai-api
 - 패키지 설치 : pip install -r requirement.txt
 - 비활성화 : deactivate
 
-#6.3 Vectors
+#6.5 Langsmith
