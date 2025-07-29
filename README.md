@@ -16,4 +16,4 @@ https://openai.com/blog/openai-api
 
 - https://smith.langchain.com
 
-#6.6 RetrievalQA
+#6.8 Stuff LCEL Chain
