@@ -16,4 +16,4 @@ https://openai.com/blog/openai-api
 
 - https://smith.langchain.com
 
-#6.8 Stuff LCEL Chain
+#6.9 Map Reduce LCEL Chain
