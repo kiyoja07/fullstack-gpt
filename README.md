@@ -16,4 +16,9 @@ https://openai.com/blog/openai-api
 
 - https://smith.langchain.com
 
-#6.9 Map Reduce LCEL Chain
+#7.0 Introduction
+
+- 가상 환경 활성화 : source env/bin/activate
+- streamlit 파일 실행 : streamlit run HOME.py
+
+#7.0 Introduction
