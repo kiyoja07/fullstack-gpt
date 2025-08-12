@@ -21,4 +21,6 @@ https://openai.com/blog/openai-api
 - 가상 환경 활성화 : source env/bin/activate
 - streamlit 파일 실행 : streamlit run HOME.py
 
-#7.8 Chain
+source env/bin/activate && streamlit run HOME.py
+
+#7.9 Streaming
