@@ -23,4 +23,4 @@ https://openai.com/blog/openai-api
 
 source env/bin/activate && streamlit run HOME.py
 
-#7.9 Streaming
+#7.10 Recap
