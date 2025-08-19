@@ -1,18 +1,23 @@
 from langchain.prompts import ChatPromptTemplate
 from langchain.document_loaders import UnstructuredFileLoader
-from langchain.embeddings import CacheBackedEmbeddings, OpenAIEmbeddings
+from langchain.embeddings import CacheBackedEmbeddings, OllamaEmbeddings
 from langchain.schema.runnable import RunnableLambda, RunnablePassthrough
 from langchain.storage import LocalFileStore
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores.faiss import FAISS
-from langchain.chat_models import ChatOpenAI
+# from langchain.chat_models import ChatOllama
 from langchain.callbacks.base import BaseCallbackHandler
 import streamlit as st
+from langchain_ollama import ChatOllama
+
 
 st.set_page_config(
     page_title="PrivateGPT",
     page_icon="📃",
 )
+
+
+
 
 
 class ChatCallbackHandler(BaseCallbackHandler):
@@ -28,8 +33,9 @@ class ChatCallbackHandler(BaseCallbackHandler):
         self.message += token
         self.message_box.markdown(self.message)
 
-
-llm = ChatOpenAI(
+# 전역 llm을 모델 선택에 따라 업데이트
+llm = ChatOllama(
+    model="deepseek-r1:1.5b",
     temperature=0.1,
     streaming=True,
     callbacks=[
@@ -37,8 +43,9 @@ llm = ChatOpenAI(
     ],
 )
 
-
-@st.cache_data(show_spinner="Embedding file...")
+# @st.cache_data(show_spinner="Embedding file...")
+# @st.cache_data 대신 @st.cache_resource 사용
+@st.cache_resource(show_spinner="Embedding file...")
 def embed_file(file):
     file_content = file.read()
     file_path = f"./.cache/private_files/{file.name}"
@@ -52,7 +59,7 @@ def embed_file(file):
     )
     loader = UnstructuredFileLoader(file_path)
     docs = loader.load_and_split(text_splitter=splitter)
-    embeddings = OpenAIEmbeddings()
+    embeddings = OllamaEmbeddings(model="deepseek-r1:1.5b")
     cached_embeddings = CacheBackedEmbeddings.from_bytes_store(embeddings, cache_dir)
     vectorstore = FAISS.from_documents(docs, cached_embeddings)
     retriever = vectorstore.as_retriever()
@@ -83,18 +90,12 @@ def format_docs(docs):
     return "\n\n".join(document.page_content for document in docs)
 
 
-prompt = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            """
-            Answer the question using ONLY the following context. If you don't know the answer just say you don't know. DON'T make anything up.
-            
-            Context: {context}
-            """,
-        ),
-        ("human", "{question}"),
-    ]
+prompt = ChatPromptTemplate.from_template(
+    """Answer the question using ONLY the following context and not your training data. If you don't know the answer just say you don't know. DON'T make anything up.
+    
+    Context: {context}
+    Question:{question}
+    """
 )
 
 
@@ -110,11 +111,31 @@ Upload your files on the sidebar.
 """
 )
 
+
+
 with st.sidebar:
     file = st.file_uploader(
         "Upload a .txt .pdf or .docx file",
         type=["pdf", "txt", "docx"],
     )
+
+    model = st.selectbox("Choose Your model", ("deepseek", "mistral","llama2"))
+    if model == "deepseek":
+        llm = ChatOllama(
+            model="deepseek-r1:1.5b",
+            temperature=0.1,
+            streaming=True,
+            callbacks=[ChatCallbackHandler(),
+            ],
+        )
+    else:
+        llm = ChatOllama(
+        model="llama2:latest",
+        temperature=0.1,
+        streaming=True,
+        callbacks=[ChatCallbackHandler(),],
+        )
+
 
 if file:
     retriever = embed_file(file)
@@ -137,3 +158,9 @@ if file:
 
 else:
     st.session_state["messages"] = []
+
+    
+    
+    
+
+

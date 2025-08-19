@@ -23,4 +23,10 @@ https://openai.com/blog/openai-api
 
 source env/bin/activate && streamlit run HOME.py
 
-#8.1 HuggingFaceHub
+#8.4 Ollama
+
+- langchain 패키지 설치 : pip install langchain-ollama
+- ollama 다운로드 : https://ollama.com
+- 터미널로 deepseek-r1:1.5b 모델 (로컬에 없으면) 설치 및 실행 : ollama run deepseek-r1:1.5b
+
+#8.5 Conclusions
