@@ -2,7 +2,7 @@
 # model="gpt-5-nano-2025-08-07",
 
 import json
-from operator import rshift
+
 from langchain.document_loaders import UnstructuredFileLoader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.chat_models import ChatOpenAI
@@ -17,6 +17,27 @@ class JsonOutputParser(BaseOutputParser):
     def parse(self, text):
         text = text.replace("```", "").replace("json", "")
         return json.loads(text)
+
+# class JsonOutputParser(BaseOutputParser):
+#     def parse(self, text):
+#         # More careful cleaning of the text
+#         text = text.strip()
+#         # Remove code block markers but preserve the JSON structure
+#         if text.startswith("```json"):
+#             text = text[7:]  # Remove ```json
+#         if text.startswith("```"):
+#             text = text[3:]   # Remove ```
+#         if text.endswith("```"):
+#             text = text[:-3]  # Remove trailing ```
+#         text = text.strip()
+        
+#         try:
+#             return json.loads(text)
+#         except json.JSONDecodeError as e:
+#             st.error(f"JSON parsing error: {str(e)}")
+#             st.error(f"Raw text: {text[:500]}...")  # Show first 500 chars for debugging
+#             return {"questions": []}  # Return empty structure to prevent crash
+
 
 
 output_parser = JsonOutputParser()
@@ -47,7 +68,7 @@ questions_prompt = ChatPromptTemplate.from_messages(
             """
     You are a helpful assistant that is role playing as a teacher.
          
-    Based ONLY on the following context make 10 questions to test the user's knowledge about the text.
+    Based ONLY on the following context make 5 (FIVE) questions minimum to test the user's knowledge about the text.
     
     Each question should have 4 answers, three of them must be incorrect and one should be correct.
          
@@ -203,6 +224,7 @@ formatting_prompt = ChatPromptTemplate.from_messages(
 )
 
 formatting_chain = formatting_prompt | llm
+# formatting_chain = formatting_prompt | llm | output_parser
 
 
 @st.cache_data(show_spinner="Loading file...")
@@ -218,6 +240,19 @@ def split_file(file):
     )
     loader = UnstructuredFileLoader(file_path)
     docs = loader.load_and_split(text_splitter=splitter)
+    return docs
+
+
+@st.cache_data(show_spinner="Making quiz...")
+def run_quiz_chain(_docs, topic):
+    chain = {"context": questions_chain} | formatting_chain | output_parser
+    return chain.invoke(_docs)
+
+
+@st.cache_data(show_spinner="Searching Wikipedia...")
+def wiki_search(term):
+    retriever = WikipediaRetriever(top_k_results=5)
+    docs = retriever.get_relevant_documents(term)
     return docs
 
 
@@ -240,9 +275,7 @@ with st.sidebar:
     else:
         topic = st.text_input("Search Wikipedia...")
         if topic:
-            retriever = WikipediaRetriever(top_k_results=5)
-            with st.status("Searching Wikipedia..."):
-                docs = retriever.get_relevant_documents(topic)
+            docs = wiki_search(topic)
 
 
 if not docs:
@@ -256,9 +289,17 @@ if not docs:
     """
     )
 else:
-    start = st.button("Generate Quiz")
-
-    if start:
-        chain = {"context": questions_chain} | formatting_chain | output_parser
-        response = chain.invoke(docs)
-        st.write(response)
+    response = run_quiz_chain(docs, topic if topic else file.name)
+    with st.form("questions_form"):
+        for question in response["questions"]:
+            st.write(question["question"])
+            value = st.radio(
+                "Select an option.",
+                [answer["answer"] for answer in question["answers"]],
+                index=None,
+            )
+            if {"answer": value, "correct": True} in question["answers"]:
+                st.success("Correct!")
+            elif value is not None:
+                st.error("Wrong!")
+        button = st.form_submit_button()
