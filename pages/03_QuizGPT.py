@@ -2,7 +2,6 @@
 # model="gpt-5-nano-2025-08-07",
 
 import json
-
 from langchain.document_loaders import UnstructuredFileLoader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.chat_models import ChatOpenAI
@@ -17,27 +16,6 @@ class JsonOutputParser(BaseOutputParser):
     def parse(self, text):
         text = text.replace("```", "").replace("json", "")
         return json.loads(text)
-
-# class JsonOutputParser(BaseOutputParser):
-#     def parse(self, text):
-#         # More careful cleaning of the text
-#         text = text.strip()
-#         # Remove code block markers but preserve the JSON structure
-#         if text.startswith("```json"):
-#             text = text[7:]  # Remove ```json
-#         if text.startswith("```"):
-#             text = text[3:]   # Remove ```
-#         if text.endswith("```"):
-#             text = text[:-3]  # Remove trailing ```
-#         text = text.strip()
-        
-#         try:
-#             return json.loads(text)
-#         except json.JSONDecodeError as e:
-#             st.error(f"JSON parsing error: {str(e)}")
-#             st.error(f"Raw text: {text[:500]}...")  # Show first 500 chars for debugging
-#             return {"questions": []}  # Return empty structure to prevent crash
-
 
 
 output_parser = JsonOutputParser()
@@ -68,7 +46,7 @@ questions_prompt = ChatPromptTemplate.from_messages(
             """
     You are a helpful assistant that is role playing as a teacher.
          
-    Based ONLY on the following context make 5 (FIVE) questions minimum to test the user's knowledge about the text.
+    Based ONLY on the following context make 10 (TEN) questions to test the user's knowledge about the text.
     
     Each question should have 4 answers, three of them must be incorrect and one should be correct.
          
@@ -145,7 +123,7 @@ formatting_prompt = ChatPromptTemplate.from_messages(
                         {{
                             "answer": "Blue",
                             "correct": true
-                        }},
+                        }}
                 ]
             }},
                         {{
@@ -166,7 +144,7 @@ formatting_prompt = ChatPromptTemplate.from_messages(
                         {{
                             "answer": "Beirut",
                             "correct": false
-                        }},
+                        }}
                 ]
             }},
                         {{
@@ -187,7 +165,7 @@ formatting_prompt = ChatPromptTemplate.from_messages(
                         {{
                             "answer": "1998",
                             "correct": false
-                        }},
+                        }}
                 ]
             }},
             {{
@@ -208,7 +186,7 @@ formatting_prompt = ChatPromptTemplate.from_messages(
                         {{
                             "answer": "Model",
                             "correct": false
-                        }},
+                        }}
                 ]
             }}
         ]
@@ -224,7 +202,6 @@ formatting_prompt = ChatPromptTemplate.from_messages(
 )
 
 formatting_chain = formatting_prompt | llm
-# formatting_chain = formatting_prompt | llm | output_parser
 
 
 @st.cache_data(show_spinner="Loading file...")
@@ -258,6 +235,7 @@ def wiki_search(term):
 
 with st.sidebar:
     docs = None
+    topic = None
     choice = st.selectbox(
         "Choose what you want to use.",
         (
@@ -297,9 +275,10 @@ else:
                 "Select an option.",
                 [answer["answer"] for answer in question["answers"]],
                 index=None,
+                key=f"question_{question['question'][:50]}",  # Use first 50 chars of question as unique key
             )
             if {"answer": value, "correct": True} in question["answers"]:
                 st.success("Correct!")
             elif value is not None:
                 st.error("Wrong!")
-        button = st.form_submit_button()
+        button = st.form_submit_button("Submit")
