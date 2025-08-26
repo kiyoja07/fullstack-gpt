@@ -29,4 +29,4 @@ source env/bin/activate && streamlit run HOME.py
 - ollama 다운로드 : https://ollama.com
 - 터미널로 deepseek-r1:1.5b 모델 (로컬에 없으면) 설치 및 실행 : ollama run deepseek-r1:1.5b
 
-#9.9 Conclusions
+#9.9 Conclusions - Challenge

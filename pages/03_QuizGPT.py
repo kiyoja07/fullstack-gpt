@@ -11,7 +11,7 @@ import streamlit as st
 from langchain.retrievers import WikipediaRetriever
 from langchain.schema import BaseOutputParser, output_parser
 
-
+# GPT 응답을 문자열 -> JSON 형식으로 변환하는 파서
 class JsonOutputParser(BaseOutputParser):
     def parse(self, text):
         text = text.replace("```", "").replace("json", "")
@@ -28,13 +28,13 @@ st.set_page_config(
 st.title("QuizGPT")
 
 llm = ChatOpenAI(
-    temperature=0.1,
+    temperature=0.1, # 낮은 온도 → 일관된 결과
     model="gpt-3.5-turbo-1106",
-    streaming=True,
-    callbacks=[StreamingStdOutCallbackHandler()],
+    streaming=True, # 실시간 출력
+    callbacks=[StreamingStdOutCallbackHandler()], # 콘솔 출력
 )
 
-
+# 문서 내용을 포맷하는 함수
 def format_docs(docs):
     return "\n\n".join(document.page_content for document in docs)
 
@@ -74,6 +74,10 @@ questions_prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
+# 1. 입력: 문서 리스트
+# 2. 처리: [format_docs] 함수로 텍스트 결합
+# 3. 프롬프트: 질문 생성 지침과 함께 전달
+# 4. 출력: GPT가 생성한 원시 질문 텍스트
 questions_chain = {"context": format_docs} | questions_prompt | llm
 
 formatting_prompt = ChatPromptTemplate.from_messages(
@@ -201,35 +205,40 @@ formatting_prompt = ChatPromptTemplate.from_messages(
     ]
 )
 
+# 1. 구조화: 원시 텍스트를 JSON으로 변환
+# 2. 정답 처리: (o) 마킹을 "correct": true로 변환
+# 3. 데이터 구조: 웹 UI에서 사용하기 쉬운 형태로 변환
 formatting_chain = formatting_prompt | llm
 
 
-@st.cache_data(show_spinner="Loading file...")
+@st.cache_data(show_spinner="Loading file...") # 캐싱
 def split_file(file):
     file_content = file.read()
-    file_path = f"./.cache/quiz_files/{file.name}"
+    file_path = f"./.cache/quiz_files/{file.name}" 
     with open(file_path, "wb") as f:
-        f.write(file_content)
+        f.write(file_content) # 파일 저장
     splitter = CharacterTextSplitter.from_tiktoken_encoder(
         separator="\n",
         chunk_size=600,
         chunk_overlap=100,
-    )
-    loader = UnstructuredFileLoader(file_path)
+    ) # 텍스트 분할
+    loader = UnstructuredFileLoader(file_path) # 문서 로드
     docs = loader.load_and_split(text_splitter=splitter)
     return docs
 
-
+# 1단계: [questions_chain]03_QuizGPT.py ) → 원시 질문 생성
+# 2단계: [formatting_chain]03_QuizGPT.py ) → JSON 구조화
+# 3단계: [output_parser]03_QuizGPT.py ) → Python 객체 변환
 @st.cache_data(show_spinner="Making quiz...")
 def run_quiz_chain(_docs, topic):
     chain = {"context": questions_chain} | formatting_chain | output_parser
     return chain.invoke(_docs)
 
 
-@st.cache_data(show_spinner="Searching Wikipedia...")
+@st.cache_data(show_spinner="Searching Wikipedia...") # 캐싱
 def wiki_search(term):
-    retriever = WikipediaRetriever(top_k_results=5)
-    docs = retriever.get_relevant_documents(term)
+    retriever = WikipediaRetriever(top_k_results=5) # 상위 5개 문서 검색
+    docs = retriever.get_relevant_documents(term) # 문서화 : LangChain Document 객체로 변환
     return docs
 
 
@@ -277,7 +286,7 @@ else:
                 index=None,
                 key=f"question_{question['question'][:50]}",  # Use first 50 chars of question as unique key
             )
-            if {"answer": value, "correct": True} in question["answers"]:
+            if {"answer": value, "correct": True} in question["answers"]: # 정답 확인
                 st.success("Correct!")
             elif value is not None:
                 st.error("Wrong!")
