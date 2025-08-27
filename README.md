@@ -35,4 +35,4 @@ source env/bin/activate && streamlit run HOME.py
 - pip install pytest-playwright
 - playwright install
 
-#10.1 AsyncChromiumLoader
+#10.2 SitemapLoader
