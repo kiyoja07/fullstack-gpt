@@ -35,4 +35,4 @@ source env/bin/activate && streamlit run HOME.py
 - pip install pytest-playwright
 - playwright install
 
-#10.5 Map Re Rank Chain part Two
+#10.6 Code Challenge
