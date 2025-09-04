@@ -41,16 +41,65 @@ answers_prompt = ChatPromptTemplate.from_template(
 
 
 def get_answers(inputs):
+    # 각 문서 조각마다 답변과 점수 생성 : 각 문서 조각마다 질문에 대한 답변을 생성하고 답변의 정확도를 0 ~ 5 사이의 점수로 평가
     docs = inputs["docs"]
     question = inputs["question"]
     answers_chain = answers_prompt | llm
-    answers = []
-    for doc in docs:
-        result = answers_chain.invoke(
-            {"question": question, "context": doc.page_content}
-        )
-        answers.append(result.content)
-    st.write(answers)
+    # answers = []
+    # for doc in docs:
+    #     result = answers_chain.invoke(
+    #         {"question": question, "context": doc.page_content}
+    #     )
+    #     answers.append(result.content)
+    return {
+        "question": question,
+        "answers": [
+            {
+                "answer": answers_chain.invoke(
+                    {"question": question, "context": doc.page_content}
+                ).content,
+                "source": doc.metadata["source"],
+                "date": doc.metadata["lastmod"],
+            }
+            for doc in docs
+        ],
+    }
+
+
+choose_prompt = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """
+            Use ONLY the following pre-existing answers to answer the user's question.
+
+            Use the answers that have the highest score (more helpful) and favor the most recent ones.
+
+            Cite sources and return the sources of the answers as they are, do not change them.
+
+            Answers: {answers}
+            """,
+        ),
+        ("human", "{question}"),
+    ]
+)
+
+
+def choose_answer(inputs):
+    # 가장 높은 점수와 최신 날짜의 답변들을 종합 : 여러 답변 중에서 가장 점수가 높고 최신 날짜의 답변을 선택하여 최종 답변 생성
+    answers = inputs["answers"]
+    question = inputs["question"]
+    choose_chain = choose_prompt | llm # choose_chain = choose_prompt.pipe(llm)와 같은 의미, | 연산자는 파이프라인을 연결하는 역할로 왼쪽 결과를 오른쪽에 전달
+    condensed = "\n\n".join(
+        f"{answer['answer']}\nSource:{answer['source']}\nDate:{answer['date']}\n"
+        for answer in answers
+    )
+    return choose_chain.invoke(
+        {
+            "question": question,
+            "answers": condensed,
+        }
+    )
 
 
 def parse_page(soup):
@@ -118,10 +167,23 @@ if url:
             st.error("Please write down a Sitemap URL.")
     else:
         retriever = load_website(url)
+        query = st.text_input("Ask a question to the website.")
+        if query:
+            chain = (
+                {
+                    "docs": retriever, # 검색된 관련 문서들
+                    "question": RunnablePassthrough(), # 입력된 질문을 그대로 다음 단계로 전달
+                }
+                | RunnableLambda(get_answers) # RunnableLambda: 일반 Python 함수를 LangChain 파이프라인에서 사용 가능하게 만드는 래퍼
+                | RunnableLambda(choose_answer)
+            )
+            result = chain.invoke(query)
+            st.markdown(result.content.replace("$", "\$"))
 
-        chain = {
-            "docs": retriever,
-            "question": RunnablePassthrough(),
-        } | RunnableLambda(get_answers)
 
-        chain.invoke("김덕화 세무사의 학력은?")
+# chain = (
+#     단계 1: 입력 데이터 준비
+#     | 단계 2: 개별 답변 생성  
+#     | 단계 3: 최적 답변 선택
+# )
+# result = chain.invoke(query)  # "What is AI?" 같은 질문 전달
