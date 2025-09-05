@@ -35,4 +35,7 @@ source env/bin/activate && streamlit run HOME.py
 - pip install pytest-playwright
 - playwright install
 
-#10.6 Code Challenge
+#11.1 Audio Extraction
+
+- brew install ffmpeg
+- ffmpeg -i files/podcast.mp4 -vn files/audio.mp3

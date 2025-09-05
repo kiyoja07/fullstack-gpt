@@ -13,7 +13,7 @@ from langchain_ollama import ChatOllama
 
 st.set_page_config(
     page_title="PrivateGPT",
-    page_icon="📃",
+    page_icon="🔒",
 )
 
 class ChatCallbackHandler(BaseCallbackHandler):
