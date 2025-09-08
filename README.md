@@ -43,3 +43,5 @@ source env/bin/activate && streamlit run HOME.py
 #11.2 Cutting The Audio
 
 - pip install pydub
+
+#11.3 Whisper Transcript
