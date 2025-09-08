@@ -39,3 +39,7 @@ source env/bin/activate && streamlit run HOME.py
 
 - brew install ffmpeg
 - ffmpeg -i files/podcast.mp4 -vn files/audio.mp3
+
+#11.2 Cutting The Audio
+
+- pip install pydub
