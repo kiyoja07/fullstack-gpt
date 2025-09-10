@@ -44,4 +44,4 @@ source env/bin/activate && streamlit run HOME.py
 
 - pip install pydub
 
-#11.3 Whisper Transcript
+#11.4 Recap
