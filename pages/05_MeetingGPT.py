@@ -1,3 +1,4 @@
+from langchain.storage import LocalFileStore
 import streamlit as st
 import subprocess
 import math
@@ -10,6 +11,8 @@ from langchain.prompts import ChatPromptTemplate
 from langchain.document_loaders import TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import StrOutputParser
+from langchain.vectorstores.faiss import FAISS
+from langchain.embeddings import CacheBackedEmbeddings, OpenAIEmbeddings
 
 llm = ChatOpenAI(
     temperature=0.1,
@@ -17,6 +20,41 @@ llm = ChatOpenAI(
 
 has_transcript = os.path.exists("./.cache/podcast.txt")
 
+splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+    chunk_size=800,
+    chunk_overlap=100,
+)
+
+
+@st.cache_data()
+def embed_file(file_path):
+    cache_dir = LocalFileStore(f"./.cache/embeddings/{file.name}")
+    splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+        chunk_size=800,
+        chunk_overlap=100,
+    )
+    loader = TextLoader(file_path)
+    docs = loader.load_and_split(text_splitter=splitter)
+    embeddings = OpenAIEmbeddings()
+    cached_embeddings = CacheBackedEmbeddings.from_bytes_store(embeddings, cache_dir)
+    vectorstore = FAISS.from_documents(docs, cached_embeddings)
+    # retriever = vectorstore.as_retriever()
+    # return retriever
+
+    # Save the vectorstore to disk instead of returning the retriever
+    vectorstore.save_local(f"./.cache/vectorstore/{os.path.basename(file_path)}")
+    return file_path  # Return file path instead of retriever
+
+
+def get_retriever(file_path):
+    """Load the vectorstore and return retriever (not cached)"""
+    embeddings = OpenAIEmbeddings()
+    vectorstore = FAISS.load_local(
+        f"./.cache/vectorstore/{os.path.basename(file_path)}", 
+        embeddings,
+        allow_dangerous_deserialization=True
+    )
+    return vectorstore.as_retriever()
 
 @st.cache_data()
 def transcribe_chunks(chunk_folder, destination):
@@ -126,10 +164,7 @@ if video:
 
         if start:
             loader = TextLoader(transcript_path)
-            splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-                chunk_size=800,
-                chunk_overlap=100,
-            )
+
             docs = loader.load_and_split(text_splitter=splitter)
 
             first_summary_prompt = ChatPromptTemplate.from_template(
@@ -172,3 +207,18 @@ if video:
                     )
                     st.write(summary)
             st.write(summary)
+        
+    with qa_tab:
+        # retriever = embed_file(transcript_path)
+
+        # docs = retriever.invoke("누구에 관한 내용인가요?")  # Example question in Korean
+
+        # st.write(docs)
+
+        # Create the embeddings if they don't exist
+        embed_file(transcript_path)
+        # Get the retriever (not cached)
+        retriever = get_retriever(transcript_path)
+        
+        docs = retriever.invoke("누구를 대상으로 하는 내용이라고 생각해요?")
+        st.write(docs)

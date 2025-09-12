@@ -44,4 +44,4 @@ source env/bin/activate && streamlit run HOME.py
 
 - pip install pydub
 
-#11.7 Refine Chain
+#11.8 Q&A Tab
