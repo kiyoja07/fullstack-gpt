@@ -44,4 +44,4 @@ source env/bin/activate && streamlit run HOME.py
 
 - pip install pydub
 
-#12.1 Your First Agent
+#12.2 How Do Agents Work
