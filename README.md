@@ -44,4 +44,4 @@ source env/bin/activate && streamlit run HOME.py
 
 - pip install pydub
 
-#12.3 Zero-shot ReAct Agent
+#12.4 OpenAI Functions Agent
