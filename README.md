@@ -44,4 +44,4 @@ source env/bin/activate && streamlit run HOME.py
 
 - pip install pydub
 
-#12.2 How Do Agents Work
+#12.3 Zero-shot ReAct Agent
