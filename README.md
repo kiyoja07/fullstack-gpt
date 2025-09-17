@@ -48,3 +48,7 @@ source env/bin/activate && streamlit run HOME.py
 
 - source env/bin/activate
 - pip install --upgrade duckduckgo-search
+
+#12.6 Stock Information Tools
+
+- https://www.alphavantage.co
