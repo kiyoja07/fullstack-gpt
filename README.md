@@ -44,4 +44,7 @@ source env/bin/activate && streamlit run HOME.py
 
 - pip install pydub
 
-#12.4 OpenAI Functions Agent
+#12.5 Search Tool
+
+- source env/bin/activate
+- pip install --upgrade duckduckgo-search
