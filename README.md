@@ -52,3 +52,5 @@ source env/bin/activate && streamlit run HOME.py
 #12.6 Stock Information Tools
 
 - https://www.alphavantage.co
+
+#12.7 Agent Prompt
