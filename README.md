@@ -53,4 +53,4 @@ source env/bin/activate && streamlit run HOME.py
 
 - https://www.alphavantage.co
 
-#12.7 Agent Prompt
+#12.8 SQLDatabaseToolkit
