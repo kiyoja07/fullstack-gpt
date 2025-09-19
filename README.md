@@ -53,4 +53,8 @@ source env/bin/activate && streamlit run HOME.py
 
 - https://www.alphavantage.co
 
-#12.8 SQLDatabaseToolkit
+#13.0 Introduction
+
+- brew install cloudflare/cloudflare/cloudflared
+
+#13.1 CustomGPT Creation
