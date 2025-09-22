@@ -62,3 +62,9 @@ source env/bin/activate && streamlit run HOME.py
 - pip install fastapi
 - pip install "uvicorn[standard]"
 - uvicorn main:app --reload
+
+#13.3 GPT Action
+
+- cloudflared tunnel --url http://127.0.0.1:8000
+
+#13.3 GPT Action
