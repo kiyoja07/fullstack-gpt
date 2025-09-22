@@ -57,4 +57,8 @@ source env/bin/activate && streamlit run HOME.py
 
 - brew install cloudflare/cloudflare/cloudflared
 
-#13.1 CustomGPT Creation
+#13.2 FastAPI Server
+
+- pip install fastapi
+- pip install "uvicorn[standard]"
+- uvicorn main:app --reload
