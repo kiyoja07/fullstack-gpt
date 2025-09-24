@@ -9,7 +9,7 @@ https://openai.com/blog/openai-api
 - 기존 가상 환경 삭제 : rm -rf env
 - 설치 : python3.11 -m venv ./env
 - 활성화 : source env/bin/activate
-- 패키지 설치 : pip install -r requirement.txt
+- 패키지 설치 : pip install -r requirements.txt
 - 비활성화 : deactivate
 
 #6.5 Langsmith
@@ -70,4 +70,12 @@ source env/bin/activate && streamlit run HOME.py
 
 - cloudflared tunnel --url http://127.0.0.1:8000
 
-#13.7 Recap
+#13.8 Pinecone
+
+pip install pinecone
+
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+
+https://python.langchain.com/docs/integrations/vectorstores/pinecone/
