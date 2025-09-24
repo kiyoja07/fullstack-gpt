@@ -78,4 +78,8 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
+- 비활성화 : deactivate
+
 https://python.langchain.com/docs/integrations/vectorstores/pinecone/
+
+#13.10 Code Challenge
