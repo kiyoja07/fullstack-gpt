@@ -1,3 +1,7 @@
+# 1st Study Memo
+
+===
+
 OpenAI API
 https://openai.com/blog/openai-api
 
@@ -83,3 +87,7 @@ pip install -r requirements.txt
 https://python.langchain.com/docs/integrations/vectorstores/pinecone/
 
 #13.10 Code Challenge
+
+# 2nd Study
+
+#3.2 Prompt Templates
