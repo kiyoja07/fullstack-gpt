@@ -8,3 +8,23 @@ files/
 .venv/
 __pycache__/
 *.pyc
+
+
+# Large files
+*.sqlite
+*.db
+recipes.csv
+
+# Virtual environment
+.venv/
+env/
+
+# Cache
+.cache/
+__pycache__/
+
+# Jupyter
+*.ipynb_checkpoints/
+
+# OS
+.DS_Store
